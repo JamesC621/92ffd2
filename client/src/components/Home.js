@@ -62,9 +62,9 @@ const Home = ({ user, logout }) => {
     });
   };
 
-  const postMessage = (body) => {
+  const postMessage = async (body) => {
     try {
-      const data = saveMessage(body);
+      const data = await saveMessage(body);
 
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
@@ -80,14 +80,16 @@ const Home = ({ user, logout }) => {
 
   const addNewConvo = useCallback(
     (recipientId, message) => {
-      conversations.forEach((convo) => {
+      const convosCopy = conversations.map((convo) => {
         if (convo.otherUser.id === recipientId) {
           convo.messages.push(message);
           convo.latestMessageText = message.text;
           convo.id = message.conversationId;
         }
+        return convo;
       });
-      setConversations(conversations);
+      setConversations(convosCopy);
+
     },
     [setConversations, conversations],
   );
@@ -103,16 +105,21 @@ const Home = ({ user, logout }) => {
           messages: [message],
         };
         newConvo.latestMessageText = message.text;
-        setConversations((prev) => [newConvo, ...prev]);
-      }
-
-      conversations.forEach((convo) => {
-        if (convo.id === message.conversationId) {
-          convo.messages.push(message);
-          convo.latestMessageText = message.text;
-        }
-      });
-      setConversations(conversations);
+        setConversations((prev) => 
+          prev.filter((convo) => 
+            convo.otherUser.id === newConvo.otherUser.id).length ? prev : [newConvo, ...prev]);
+      } else {
+        let i;
+        const convosCopy = conversations.map((convo, index) => {
+          if (convo.id === message.conversationId) {
+            i = index;
+            convo.messages.push(message);
+            convo.latestMessageText = message.text;
+          }
+          return convo;
+        });
+        setConversations([convosCopy[i], ...convosCopy.slice(0, i), ...convosCopy.slice(i + 1)]);
+      };
     },
     [setConversations, conversations],
   );
