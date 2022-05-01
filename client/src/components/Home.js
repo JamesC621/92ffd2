@@ -29,7 +29,7 @@ const Home = ({ user, logout }) => {
     const currentUsers = {};
 
     // make table of current users so we can lookup faster
-    conversations.forEach((convo) => {
+    conversations.forEach((convo) => {  
       currentUsers[convo.otherUser.id] = true;
     });
 
@@ -80,19 +80,20 @@ const Home = ({ user, logout }) => {
 
   const addNewConvo = useCallback(
     (recipientId, message) => {
-      const convosCopy = conversations.map((convo) => {
-        if (convo.otherUser.id === recipientId) {
-          convo.messages.push(message);
-          convo.latestMessageText = message.text;
-          convo.id = message.conversationId;
-        }
-        return convo;
-      });
-      setConversations(convosCopy);
-
-    },
-    [setConversations, conversations],
-  );
+      setConversations((prev) => 
+        prev.map((convo) => {
+          if (convo.otherUser.id === recipientId) {
+            const convoCopy = { ...convo };
+            convoCopy.messages.push(message);
+            convoCopy.latestMessageText = message.text;
+            convoCopy.id = message.conversationId;
+            return convoCopy;
+          } else {
+            return convo;
+          }
+        })
+      );
+  }, []);
 
   const addMessageToConversation = useCallback(
     (data) => {
@@ -105,24 +106,22 @@ const Home = ({ user, logout }) => {
           messages: [message],
         };
         newConvo.latestMessageText = message.text;
-        setConversations((prev) => 
-          prev.filter((convo) => 
-            convo.otherUser.id === newConvo.otherUser.id).length ? prev : [newConvo, ...prev]);
+        setConversations((prev) => [newConvo, ...prev]);
       } else {
-        let i;
-        const convosCopy = conversations.map((convo, index) => {
-          if (convo.id === message.conversationId) {
-            i = index;
-            convo.messages.push(message);
-            convo.latestMessageText = message.text;
-          }
-          return convo;
-        });
-        setConversations([convosCopy[i], ...convosCopy.slice(0, i), ...convosCopy.slice(i + 1)]);
+        setConversations((prev) => 
+          prev.map((convo) => {
+            if (convo.id === message.conversationId) {
+              const convoCopy = { ...convo };
+              convoCopy.messages.push(message);
+              convoCopy.latestMessageText = message.text;
+              return convoCopy;
+            } else {
+              return convo;
+            }
+          }),
+        );
       };
-    },
-    [setConversations, conversations],
-  );
+    }, []);
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
