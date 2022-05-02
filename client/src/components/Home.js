@@ -53,6 +53,11 @@ const Home = ({ user, logout }) => {
     const { data } = await axios.post("/api/messages", body);
     return data;
   };
+  
+  const readMessage = async (body) => {
+    const { data } = await axios.post("/api/readMessages", body);
+    return data;
+  }
 
   const sendMessage = (data, body) => {
     socket.emit("new-message", {
@@ -123,8 +128,14 @@ const Home = ({ user, logout }) => {
       };
     }, []);
 
-  const setActiveChat = (username) => {
-    setActiveConversation(username);
+  const setActiveChat = (id) => {
+    try {
+      //readMessage()
+      setActiveConversation(id);
+    } catch (error) {
+      console.log(error)
+    }
+
   };
 
   const addOnlineUser = useCallback((id) => {

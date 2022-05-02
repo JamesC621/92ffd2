@@ -33,11 +33,13 @@ def seed():
         conversation=santiagoConvo, senderId=santiago.id, text="Where are you from?"
     )
     messages.save()
+    print(messages.id)
 
     messages = Message(
         conversation=santiagoConvo, senderId=thomas.id, text="I'm from New York"
     )
     messages.save()
+    print(messages.id)
 
     messages = Message(
         conversation=santiagoConvo,
