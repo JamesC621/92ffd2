@@ -62,7 +62,7 @@ const ChatContent = ({ conversation }) => {
       {conversation.unreadCount ? 
       <Box className={classes.unreadCountContainer}>
         <Typography className={classes.unreadCount}>
-          {conversation.unreadCount + 50}
+          {conversation.unreadCount}
         </Typography>
       </Box>
       : <></>}
