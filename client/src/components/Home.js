@@ -153,7 +153,24 @@ const Home = ({ user, logout }) => {
           lastRead: -1,
         };
         newConvo.latestMessageText = message.text;
-        setConversations((prev) => [newConvo, ...prev]);
+        setConversations((prev) => {
+          const fakeConvo = prev.filter((convo) => convo.otherUser.id === newConvo.otherUser.id)[0];
+          if (fakeConvo) {
+            if (newConvo.otherUser.id === activeConversation) {
+              newConvo.unreadCount = 0;
+              putReadStatus({ recipientId: newConvo.otherUser.id });
+            }
+            return prev.map((convo) => {
+              if (convo.otherUser.id === newConvo.otherUser.id) {
+                return newConvo;
+              } else {
+                return convo;
+              }
+            })
+          } else {
+            return [newConvo, ...prev];
+          }
+        });
       } else {
         setConversations((prev) => 
           prev.map((convo) => {
@@ -180,7 +197,6 @@ const Home = ({ user, logout }) => {
   const setActiveChat = (id) => {
     try {
       setActiveConversation(id);
-      //saveReadStatus({ recipientId: id});
       putReadStatus({ recipientId: id});
     } catch (error) {
       console.error(error);
