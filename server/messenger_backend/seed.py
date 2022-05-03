@@ -28,7 +28,7 @@ def seed():
 
     santiagoConvo = Conversation(user1=thomas, user2=santiago)
     santiagoConvo.save()
-    
+
     messages = Message(
         conversation=santiagoConvo, senderId=santiago.id, text="Where are you from?"
     )

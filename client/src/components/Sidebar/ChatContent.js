@@ -11,7 +11,6 @@ const useStyles = makeStyles((theme) => ({
   },
   username: {
     fontWeight: "bold",
-    //fontSize: 16,
     letterSpacing: -0.2,
   },
   previewText: {

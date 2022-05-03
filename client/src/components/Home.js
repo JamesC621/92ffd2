@@ -66,6 +66,7 @@ const Home = ({ user, logout }) => {
       sender: data.sender,
     });
   };
+
   const sendReadStatus = (data) => {
     socket.emit("read-message", {
       ...data,

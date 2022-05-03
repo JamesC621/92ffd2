@@ -21,12 +21,6 @@ const useStyles = makeStyles(() => ({
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  read: {
-    fontSize: 9,
-    color: '#BECCE2',
-    //fontWeight: 'bold',
-    marginBottom: 5,
-  },
   text: {
     fontSize: 14,
     color: '#91A3C0',
