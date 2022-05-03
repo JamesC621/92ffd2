@@ -52,6 +52,7 @@ class Messages(APIView):
 
             message = Message(senderId=sender_id, text=text, conversation=conversation)
             message.save()
+            conversation.user2_unread += 1
             conversation.user2_last_unread_id = message.id
             conversation.save()
             message_json = message.to_dict()
