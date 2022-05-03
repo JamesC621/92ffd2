@@ -18,10 +18,10 @@ class Conversation(utils.CustomModel):
 
     user1_unread = models.IntegerField(default=0)
     user2_unread = models.IntegerField(default=0)
-    user1_last_unread_id = models.IntegerField(default=0)
-    user2_last_unread_id = models.IntegerField(default=0)
-    user1_last_read_id = models.IntegerField(default=0)
-    user2_last_read_id = models.IntegerField(default=0)
+    user1_last_unread_id = models.IntegerField(default=-1)
+    user2_last_unread_id = models.IntegerField(default=-1)
+    user1_last_read_id = models.IntegerField(default=-1)
+    user2_last_read_id = models.IntegerField(default=-1)
 
     # find conversation given two user Ids
     def find_conversation(user1Id, user2Id):

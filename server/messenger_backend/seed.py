@@ -28,18 +28,18 @@ def seed():
 
     santiagoConvo = Conversation(user1=thomas, user2=santiago)
     santiagoConvo.save()
-
+    
     messages = Message(
         conversation=santiagoConvo, senderId=santiago.id, text="Where are you from?"
     )
     messages.save()
-    print(messages.id)
-
     messages = Message(
         conversation=santiagoConvo, senderId=thomas.id, text="I'm from New York"
     )
     messages.save()
-    print(messages.id)
+    santiagoConvo.user2_last_read_id = messages.id
+    santiagoConvo.user2_last_unread_id = messages.id
+    santiagoConvo.save()
 
     messages = Message(
         conversation=santiagoConvo,
@@ -47,6 +47,9 @@ def seed():
         text="Share photo of your city, please",
     )
     messages.save()
+    santiagoConvo.user1_last_read_id = messages.id
+    santiagoConvo.user1_last_unread_id = messages.id
+    santiagoConvo.save()
 
     chiumbo = User(
         username="chiumbo",
@@ -63,6 +66,9 @@ def seed():
         conversation=chiumboConvo, senderId=chiumbo.id, text="Sure! What time?"
     )
     messages.save()
+    chiumboConvo.user2_last_read_id = messages.id
+    chiumboConvo.user2_last_unread_id = messages.id
+    chiumboConvo.save()
 
     hualing = User(
         username="hualing",
@@ -83,7 +89,10 @@ def seed():
 
     messages = Message(conversation=hualingConvo, senderId=hualing.id, text="😂 😂 😂")
     messages.save()
-
+    hualingConvo.user2_last_read_id = messages.id
+    hualingConvo.user2_last_unread_id = messages.id
+    hualingConvo.save()
+    
     user = User(
         username="ashanti",
         email="ashanti@email.com",
