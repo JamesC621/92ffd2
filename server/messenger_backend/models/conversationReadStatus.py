@@ -9,4 +9,4 @@ class ConversationReadStatus(utils.CustomModel):
     last_read_id = models.IntegerField(default=-1)
     last_unread_id = models.IntegerField(default=-1)
     unread = models.IntegerField(default=0)
-    
+
