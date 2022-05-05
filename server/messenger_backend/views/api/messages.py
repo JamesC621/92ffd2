@@ -29,6 +29,14 @@ class Messages(APIView):
                     senderId=sender_id, text=text, conversation=conversation
                 )
                 message.save()
+                if conversation.user1 and conversation.user1.id != sender_id:
+                    conversation.user1_unread += 1
+                    conversation.user1_last_unread_id = message.id
+                elif conversation.user2 and conversation.user2.id != sender_id:
+                    conversation.user2_unread += 1
+                    conversation.user2_last_unread_id = message.id
+                conversation.save()
+                
                 message_json = message.to_dict()
                 return JsonResponse({"message": message_json, "sender": body["sender"]})
 
@@ -44,6 +52,9 @@ class Messages(APIView):
 
             message = Message(senderId=sender_id, text=text, conversation=conversation)
             message.save()
+            conversation.user2_unread += 1
+            conversation.user2_last_unread_id = message.id
+            conversation.save()
             message_json = message.to_dict()
             return JsonResponse({"message": message_json, "sender": sender})
         except Exception as e:

@@ -53,6 +53,11 @@ const Home = ({ user, logout }) => {
     const { data } = await axios.post("/api/messages", body);
     return data;
   };
+  
+  const saveReadStatus = async (body) => {
+    const { data } = await axios.put("/api/readMessages", body);
+    return data;
+  }
 
   const sendMessage = (data, body) => {
     socket.emit("new-message", {
@@ -60,6 +65,25 @@ const Home = ({ user, logout }) => {
       recipientId: body.recipientId,
       sender: data.sender,
     });
+  };
+
+  const sendReadStatus = (data) => {
+    socket.emit("read-message", {
+      ...data,
+    });
+  };
+
+  const putReadStatus = async (body) => {
+    try {
+      const data = await saveReadStatus(body); //expect { conversationId, readerId, otherUserId, readerLastRead, otherUserLastRead }
+
+      if (data.conversationId) {
+        updateReadStatus(data);
+        sendReadStatus(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const postMessage = async (body) => {
@@ -78,12 +102,33 @@ const Home = ({ user, logout }) => {
     }
   };
 
+  const updateReadStatus = useCallback(
+    (data) => {
+      const { conversationId, readerId, otherUserId, readerLastRead, otherUserLastRead } = data;
+      setConversations((prev) => 
+        prev.map((convo) => {
+          if (convo.id === conversationId) {
+            const convoCopy = { ...convo, messages: [ ...convo.messages ]};
+            if (convo.otherUser.id !== readerId) {
+              convoCopy.unreadCount = 0;
+              convoCopy.lastRead = otherUserLastRead;
+            } else {
+              convoCopy.lastRead = readerLastRead;
+            }
+            return convoCopy;
+          } else {
+            return convo;
+          }
+      })
+    );
+  }, []);
+
   const addNewConvo = useCallback(
     (recipientId, message) => {
       setConversations((prev) => 
         prev.map((convo) => {
           if (convo.otherUser.id === recipientId) {
-            const convoCopy = { ...convo, messages: [ ...convo.messages ]};
+            const convoCopy = { ...convo, messages: [ ...convo.messages ], unreadCount: 0, lastRead: -1};
             convoCopy.messages.push(message);
             convoCopy.latestMessageText = message.text;
             convoCopy.id = message.conversationId;
@@ -104,9 +149,28 @@ const Home = ({ user, logout }) => {
           id: message.conversationId,
           otherUser: sender,
           messages: [message],
+          unreadCount: 1,
+          lastRead: -1,
         };
         newConvo.latestMessageText = message.text;
-        setConversations((prev) => [newConvo, ...prev]);
+        setConversations((prev) => {
+          const fakeConvo = prev.filter((convo) => convo.otherUser.id === newConvo.otherUser.id)[0];
+          if (fakeConvo) {
+            if (newConvo.otherUser.id === activeConversation) {
+              newConvo.unreadCount = 0;
+              putReadStatus({ recipientId: newConvo.otherUser.id });
+            }
+            return prev.map((convo) => {
+              if (convo.otherUser.id === newConvo.otherUser.id) {
+                return newConvo;
+              } else {
+                return convo;
+              }
+            })
+          } else {
+            return [newConvo, ...prev];
+          }
+        });
       } else {
         setConversations((prev) => 
           prev.map((convo) => {
@@ -114,6 +178,13 @@ const Home = ({ user, logout }) => {
               const convoCopy = { ...convo, messages: [ ...convo.messages ] };
               convoCopy.messages.push(message);
               convoCopy.latestMessageText = message.text;
+              if (message.senderId !== activeConversation) {
+                if (message.senderId === convoCopy.otherUser.id) {
+                  convoCopy.unreadCount++;
+                }
+              } else {
+                putReadStatus({ recipientId: message.senderId });
+              }
               return convoCopy;
             } else {
               return convo;
@@ -121,10 +192,15 @@ const Home = ({ user, logout }) => {
           }),
         );
       };
-    }, []);
+    }, [activeConversation]);
 
-  const setActiveChat = (username) => {
-    setActiveConversation(username);
+  const setActiveChat = (id) => {
+    try {
+      setActiveConversation(id);
+      putReadStatus({ recipientId: id});
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const addOnlineUser = useCallback((id) => {
@@ -159,6 +235,7 @@ const Home = ({ user, logout }) => {
 
   useEffect(() => {
     // Socket init
+    socket.on("read-message", updateReadStatus);
     socket.on("add-online-user", addOnlineUser);
     socket.on("remove-offline-user", removeOfflineUser);
     socket.on("new-message", addMessageToConversation);
@@ -166,11 +243,12 @@ const Home = ({ user, logout }) => {
     return () => {
       // before the component is destroyed
       // unbind all event handlers used in this component
+      socket.off("read-message", updateReadStatus);
       socket.off("add-online-user", addOnlineUser);
       socket.off("remove-offline-user", removeOfflineUser);
       socket.off("new-message", addMessageToConversation);
     };
-  }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
+  }, [updateReadStatus, addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
 
   useEffect(() => {
     // when fetching, prevent redirect
