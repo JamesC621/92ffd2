@@ -1,6 +1,7 @@
 # Messenger
 
 A one-to-one realtime chat app.
+![image](https://user-images.githubusercontent.com/104450176/182049650-1b54853a-3310-438b-8dfd-7b613a59c55a.png)
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
 
